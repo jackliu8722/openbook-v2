@@ -78,12 +78,13 @@ pub fn fixed_price_lots(price_data: u64) -> i64 {
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable, AnchorSerialize, AnchorDeserialize)]
 #[repr(C)]
 pub struct InnerNode {
+    pub _padding: [u8;8],
     pub tag: u8, // NodeTag
     pub padding: [u8; 3],
     /// number of highest `key` bits that all children share
     /// e.g. if it's 2, the two highest bits of `key` will be the same on all children
     pub prefix_len: u32,
-    pub padding1: [u8;8],
+    
     /// only the top `prefix_len` bits of `key` are relevant
     pub key: u128,
 
@@ -103,10 +104,10 @@ pub struct InnerNode {
 impl InnerNode {
     pub fn new(prefix_len: u32, key: u128) -> Self {
         Self {
+            _padding: Default::default(),
             tag: NodeTag::InnerNode.into(),
             padding: Default::default(),
             prefix_len,
-            padding1: Default::default(),
             key,
             children: [0; 2],
             child_earliest_expiry: [u64::MAX; 2],
@@ -143,6 +144,7 @@ impl InnerNode {
 )]
 #[repr(C)]
 pub struct LeafNode {
+    pub _padding: [u8;8],
     /// NodeTag
     pub tag: u8,
 
@@ -153,7 +155,7 @@ pub struct LeafNode {
     /// A value of 0 means no expiry.
     pub time_in_force: u16,
 
-    pub padding: [u8; 12],
+    pub padding: [u8; 4],
 
     /// The binary tree key, see new_node_key()
     pub key: u128,
@@ -191,6 +193,7 @@ impl LeafNode {
         client_order_id: u64,
     ) -> Self {
         Self {
+            _padding: Default::default(),
             tag: NodeTag::LeafNode.into(),
             owner_slot,
             time_in_force,
@@ -243,6 +246,7 @@ pub struct FreeNode {
 
 #[zero_copy]
 pub struct AnyNode {
+    pub _padding: [u8;8],
     pub tag: u8,
     pub data: [u8; 79],
     // essential to make AnyNode alignment the same as other node types
