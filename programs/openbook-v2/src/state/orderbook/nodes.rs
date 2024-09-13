@@ -83,7 +83,7 @@ pub struct InnerNode {
     /// number of highest `key` bits that all children share
     /// e.g. if it's 2, the two highest bits of `key` will be the same on all children
     pub prefix_len: u32,
-
+    pub padding1: [u8;8],
     /// only the top `prefix_len` bits of `key` are relevant
     pub key: u128,
 
@@ -106,6 +106,7 @@ impl InnerNode {
             tag: NodeTag::InnerNode.into(),
             padding: Default::default(),
             prefix_len,
+            padding1: Default::default(),
             key,
             children: [0; 2],
             child_earliest_expiry: [u64::MAX; 2],
@@ -152,7 +153,7 @@ pub struct LeafNode {
     /// A value of 0 means no expiry.
     pub time_in_force: u16,
 
-    pub padding: [u8; 4],
+    pub padding: [u8; 12],
 
     /// The binary tree key, see new_node_key()
     pub key: u128,
