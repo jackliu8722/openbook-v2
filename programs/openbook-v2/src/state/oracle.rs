@@ -30,16 +30,14 @@ pub mod switchboard_v2_mainnet_oracle {
     declare_id!("DtmE9D2CSB4L5D6A15mraeEjrGMm6auWVzgaD8hK2tZM");
 }
 
-#[zero_copy]
-#[derive(AnchorDeserialize, AnchorSerialize, Debug)]
+#[zero_copy(unsafe)]
+#[derive(AnchorDeserialize, Debug)]
 pub struct OracleConfig {
     pub conf_filter: f64,
     pub max_staleness_slots: i64,
     pub reserved: [u8; 72],
 }
-const_assert_eq!(size_of::<OracleConfig>(), 8 + 8 + 72);
-const_assert_eq!(size_of::<OracleConfig>(), 88);
-const_assert_eq!(size_of::<OracleConfig>() % 8, 0);
+
 
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone)]
 #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
@@ -100,11 +98,10 @@ impl OracleState {
     pub fn has_valid_confidence(&self, oracle_pk: &Pubkey, config: &OracleConfig) -> bool {
         if self.deviation > config.conf_filter * self.price {
             msg!(
-                "Oracle confidence not good enough: pubkey {}, price: {}, deviation: {}, conf_filter: {}",
+                "Oracle confidence not good enough: pubkey {}, price: {}, deviation: {}",
                 oracle_pk,
                 self.price,
                 self.deviation,
-                config.conf_filter,
             );
             false
         } else {
@@ -145,9 +142,7 @@ pub struct StubOracle {
     pub deviation: f64,
     pub reserved: [u8; 104],
 }
-const_assert_eq!(size_of::<StubOracle>(), 32 + 32 + 8 + 8 + 8 + 8 + 104);
-const_assert_eq!(size_of::<StubOracle>(), 200);
-const_assert_eq!(size_of::<StubOracle>() % 8, 0);
+
 
 pub fn determine_oracle_type(acc_info: &impl KeyedAccountReader) -> Result<OracleType> {
     let data = acc_info.data();

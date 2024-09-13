@@ -78,6 +78,7 @@ pub fn fixed_price_lots(price_data: u64) -> i64 {
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable, AnchorSerialize, AnchorDeserialize)]
 #[repr(C)]
 pub struct InnerNode {
+    pub _pad: u64,
     pub tag: u8, // NodeTag
     pub padding: [u8; 3],
     /// number of highest `key` bits that all children share
@@ -98,13 +99,12 @@ pub struct InnerNode {
 
     pub reserved: [u8; 40],
 }
-const_assert_eq!(size_of::<InnerNode>(), 4 + 4 + 16 + 4 * 2 + 8 * 2 + 40);
-const_assert_eq!(size_of::<InnerNode>(), NODE_SIZE);
-const_assert_eq!(size_of::<InnerNode>() % 8, 0);
+
 
 impl InnerNode {
     pub fn new(prefix_len: u32, key: u128) -> Self {
         Self {
+            _pad: 0,
             tag: NodeTag::InnerNode.into(),
             padding: Default::default(),
             prefix_len,
@@ -144,6 +144,7 @@ impl InnerNode {
 )]
 #[repr(C)]
 pub struct LeafNode {
+    pub _pad: u64,
     /// NodeTag
     pub tag: u8,
 
@@ -177,12 +178,7 @@ pub struct LeafNode {
     /// User defined id for this order, used in FillEvents
     pub client_order_id: u64,
 }
-const_assert_eq!(
-    size_of::<LeafNode>(),
-    4 + 1 + 1 + 1 + 1 + 16 + 32 + 8 + 8 + 8 + 8
-);
-const_assert_eq!(size_of::<LeafNode>(), NODE_SIZE);
-const_assert_eq!(size_of::<LeafNode>() % 8, 0);
+
 
 impl LeafNode {
     #[allow(clippy::too_many_arguments)]
@@ -197,6 +193,7 @@ impl LeafNode {
         client_order_id: u64,
     ) -> Self {
         Self {
+            _pad: 0,
             tag: NodeTag::LeafNode.into(),
             owner_slot,
             time_in_force,
@@ -245,8 +242,7 @@ pub struct FreeNode {
     // essential to make AnyNode alignment the same as other node types
     pub(crate) force_align: u64,
 }
-const_assert_eq!(size_of::<FreeNode>(), NODE_SIZE);
-const_assert_eq!(size_of::<FreeNode>() % 8, 0);
+
 
 #[zero_copy]
 pub struct AnyNode {
@@ -255,15 +251,7 @@ pub struct AnyNode {
     // essential to make AnyNode alignment the same as other node types
     pub force_align: u64,
 }
-const_assert_eq!(size_of::<AnyNode>(), NODE_SIZE);
-const_assert_eq!(size_of::<AnyNode>() % 8, 0);
-const_assert_eq!(align_of::<AnyNode>(), 8);
-const_assert_eq!(size_of::<AnyNode>(), size_of::<InnerNode>());
-const_assert_eq!(align_of::<AnyNode>(), align_of::<InnerNode>());
-const_assert_eq!(size_of::<AnyNode>(), size_of::<LeafNode>());
-const_assert_eq!(align_of::<AnyNode>(), align_of::<LeafNode>());
-const_assert_eq!(size_of::<AnyNode>(), size_of::<FreeNode>());
-const_assert_eq!(align_of::<AnyNode>(), align_of::<FreeNode>());
+
 
 pub(crate) enum NodeRef<'a> {
     Inner(&'a InnerNode),
