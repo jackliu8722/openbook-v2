@@ -78,7 +78,6 @@ pub fn fixed_price_lots(price_data: u64) -> i64 {
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable, AnchorSerialize, AnchorDeserialize)]
 #[repr(C)]
 pub struct InnerNode {
-    pub _pad: u64,
     pub tag: u8, // NodeTag
     pub padding: [u8; 3],
     /// number of highest `key` bits that all children share
