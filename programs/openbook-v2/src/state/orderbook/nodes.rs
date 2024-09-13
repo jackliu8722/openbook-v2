@@ -104,7 +104,6 @@ pub struct InnerNode {
 impl InnerNode {
     pub fn new(prefix_len: u32, key: u128) -> Self {
         Self {
-            _pad: 0,
             tag: NodeTag::InnerNode.into(),
             padding: Default::default(),
             prefix_len,
@@ -144,7 +143,6 @@ impl InnerNode {
 )]
 #[repr(C)]
 pub struct LeafNode {
-    pub _pad: u64,
     /// NodeTag
     pub tag: u8,
 
@@ -193,7 +191,6 @@ impl LeafNode {
         client_order_id: u64,
     ) -> Self {
         Self {
-            _pad: 0,
             tag: NodeTag::LeafNode.into(),
             owner_slot,
             time_in_force,
