@@ -75,10 +75,9 @@ pub fn fixed_price_lots(price_data: u64) -> i64 {
 /// Each InnerNode has exactly two children, which are either InnerNodes themselves,
 /// or LeafNodes. The children share the top `prefix_len` bits of `key`. The left
 /// child has a 0 in the next bit, and the right a 1.
-#[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable, AnchorSerialize, AnchorDeserialize)]
-#[repr(C)]
+#[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable, AnchorDeserialize)]
+#[repr(C,packed)]
 pub struct InnerNode {
-    pub _padding: [u8;8],
     pub tag: u8, // NodeTag
     pub padding: [u8; 3],
     /// number of highest `key` bits that all children share
@@ -104,7 +103,6 @@ pub struct InnerNode {
 impl InnerNode {
     pub fn new(prefix_len: u32, key: u128) -> Self {
         Self {
-            _padding: Default::default(),
             tag: NodeTag::InnerNode.into(),
             padding: Default::default(),
             prefix_len,
@@ -139,12 +137,11 @@ impl InnerNode {
     Eq,
     bytemuck::Pod,
     bytemuck::Zeroable,
-    AnchorSerialize,
+    
     AnchorDeserialize,
 )]
-#[repr(C)]
+#[repr(C,packed)]
 pub struct LeafNode {
-    pub _padding: [u8;8],
     /// NodeTag
     pub tag: u8,
 
@@ -193,7 +190,6 @@ impl LeafNode {
         client_order_id: u64,
     ) -> Self {
         Self {
-            _padding: Default::default(),
             tag: NodeTag::LeafNode.into(),
             owner_slot,
             time_in_force,
@@ -246,7 +242,6 @@ pub struct FreeNode {
 
 #[zero_copy]
 pub struct AnyNode {
-    pub _padding: [u8;8],
     pub tag: u8,
     pub data: [u8; 79],
     // essential to make AnyNode alignment the same as other node types
